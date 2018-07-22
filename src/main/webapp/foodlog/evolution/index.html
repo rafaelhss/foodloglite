@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="../bower_components/angular/angular.min.js"></script>
+    <script src="../bower_components/moment/min/moment.min.js"></script>
+    <link href="../bower_components/vis/dist/vis.css" rel="stylesheet" type="text/css" />
+    <script src="../bower_components/vis/dist/vis.min.js"></script>
+    <script src="../bower_components/angular-visjs/angular-vis.js"></script>
+    <style type="text/css">
+        .red {
+          fill: red;
+          font-size: 150%;
+        }
+
+        .normal {
+          font-size: 150%;
+        }
+        body{
+            width: 90vw;
+            margin: 0 auto;
+        }
+    
+        .container {
+          width: 100%;
+          position: relative;
+          padding: 0;
+          margin-left: auto;
+          margin-right: auto;
+          margin-top: 20px;
+          text-align: center;
+        }
+
+        .block {
+          display:inline-block;
+          font-size: 200%;
+        }
+        .bodylog {
+          width: 200px;
+            
+          vertical-align: middle;
+        }
+    </style>
+
+</head>
+<body ng-app="weightApp" ng-controller="weightCtrl">
+
+Evolution
+
+<vis-graph2d data="data" options="options"></vis-graph2d>
+
+<div>
+   <!-- <div id="bodylogs">
+        <div  ng-repeat="bodylog in bodyLogList">
+            <img class="bodylog" ng-src="data:{{bodylog.photoContentType}};base64,{{bodylog.photo}}"  alt="mealLog image"/>
+        </div>
+        
+    </div>
+    -->
+    <div class="container">
+        <div class="block" ng-repeat="bodylog in bodyLogList | orderBy : 'bodyLogDatetime'">
+            <img class="bodylog" ng-src="data:{{bodylog.photoContentType}};base64,{{bodylog.photo}}"  alt="mealLog image"/>
+            <br/>
+            <p>{{bodylog.bodyLogDatetime | date:'dd/MM'}}</p>
+        </div>
+    </div>
+    
+</div>
+<script>
+
+            Date.prototype.addHours = function(h) {
+                console.log("Add: " + h + "   - " + (h*60*60*1000))
+                this.setTime(this.getTime() + (h*60*60*1000));
+                return this;
+            }
+            var app = angular.module('weightApp', ['ngVis']);
+            app.controller('weightCtrl', function($scope, $http, VisDataSet, $location) {
+
+                                
+                var utcOffset = 0;
+                if(getUrlParameter('utcOffset')){
+                    utcOffset = getUrlParameter('utcOffset');
+                }
+
+                $scope.options = {
+                    dataAxis: {showMinorLabels: true}  ,
+                    legend: {left:{position:"bottom-left"}}/*,
+                    start: '2014-06-09',
+                    end: '2014-07-03'
+                    */
+                };
+
+
+                var maxWeight = 0;
+                var minWeight = 200;
+                
+                var url = "../../api/reports/evolution-timeline" + window.location.href.substring(window.location.href.indexOf('?'));
+                $http.get(url).then(function(data){
+                    
+                    $scope.bodyLogList = data.data.bodyLogList;
+                    
+                    var items = [];
+                    var groups = createGroups();
+                
+                    buildWeightLine(data, items);
+                    
+                    console.log("max:" + maxWeight)
+                    console.log("min:" + minWeight)
+                    
+                    buildDayStatsBars(data, items, groups);
+                   
+                    
+                    
+                    $scope.data = {items: new vis.DataSet(items), groups: groups};
+                        
+                    
+                }, function(error){
+                    console.log("ERROR");
+                    console.log(error);
+                });
+                
+
+                function getUrlParameter(param, dummyPath) {
+                    var sPageURL = dummyPath || window.location.search.substring(1),
+                        sURLVariables = sPageURL.split(/[&||?]/),
+                        res;
+                    for (var i = 0; i < sURLVariables.length; i += 1) {
+                        var paramName = sURLVariables[i],
+                            sParameterName = (paramName || '').split('=');
+                        if (sParameterName[0] === param) {
+                            res = sParameterName[1];
+                        }
+                    }
+                    return res;
+                }
+                
+                
+                function buildWeightLine(data, items){
+                    var lastValue = 0;
+                    data.data.weightList.reverse().forEach(function(item, index){
+                        console.log("date: " + new Date(item.weightDateTime))
+                        var today = new Date(item.weightDateTime).addHours((Number(utcOffset)));
+                        
+                        
+                        var period = 0;
+                        if (today.getHours() >= 12){
+                             if (today.getHours() >= 18){
+                                period = 2
+                             } else {
+                                period = 1
+                             }
+                         }
+
+                        console.log("today: " + today + " period:" + period)
+                        
+                        var cssclass = "normal";
+                        if(Number(item.value) > lastValue){
+                            cssclass = "red";
+                        }
+
+                        items.push({x: today, y: item.value, group: period, label: {content:item.value,  xOffset: -65, className: cssclass}});
+
+                        
+                        lastValue = item.value;
+                        if(item.value > maxWeight){
+                            maxWeight = item.value;
+                        }
+                        if(item.value < minWeight){
+                            minWeight = item.value;
+                        }
+                    })
+                }
+                
+                function buildDayStatsBars(data, items, groups) {
+                    var step = maxWeight - minWeight;
+                    
+                    data.data.dayScoreList.reverse().forEach(function(item, index){
+                        var today = new Date(item.day).addHours(Number(utcOffset));
+                        
+                        var groupId = createAndGetGroup(item.score, groups);
+                        items.push({x: today, y: maxWeight, group: groupId, label: {content:item.score,  xOffset: -65}});
+                        //$scope.data = {items: new vis.DataSet(items), groups: groups};
+                    });
+                }
+                
+                
+                function createAndGetGroup(score, groups){
+                    if(groups.get(score) == undefined) {
+                        var baseGroup = {
+                            id: score,
+                            content: 'DayScore',
+                            style: "stroke-width:0;fill-opacity:0.2;",
+                            options: {
+                                excludeFromLegend: true,
+                                style:'bar',
+                                drawPoints: {
+                                    size: 0
+                                }
+                            }
+                        }
+
+                        var fill = "fill:rgb(255, 255, 0);"
+                        var rgb = Math.round((1 - Math.abs(3 - score))*255);
+                        
+                        if(score > 3){
+                            rgb = Math.round(rgb * 1.3);
+                            fill = "fill:rgb(" + rgb +", 255, 0);"
+                        } else {
+                            fill = "fill:rgb(255," + rgb +", 0);"
+                        }
+                        baseGroup.style += fill;
+                        console.log(fill)
+
+                        groups.add(baseGroup);
+                    }
+                    return score;
+                }
+                
+                function createGroups(){
+                    var names = ['Morning', 'Evening', 'Night'];
+                    var groups = new vis.DataSet();
+                    groups.add({
+                        id: 0,
+                        content: names[0],
+                        options: {
+                            drawPoints: {
+                                style: 'square' // square, circle
+                            }
+                        }});
+
+                    groups.add({
+                        id: 1,
+                        content: names[1],
+                        options: {
+                            drawPoints: {
+                                style: 'circle' // square, circle
+                            }
+                        }});
+
+                    groups.add({
+                        id: 2,
+                        content: names[2],
+                        options: {
+                            drawPoints: {
+                                style: 'circle' // square, circle
+                            }
+                        }});
+
+                    groups.add({
+                        id: 3,
+                        content: 'Jaca',
+                        style: 'fill:red; stroke:red; stroke-width:0;fill-opacity:0.1;fill:red;',
+                        options: {
+                            style:'bar',
+                            drawPoints: {
+                                size: 1,
+                                styles: 'fill:red; stroke:red;',
+                                style: 'square' // square, circle
+                            }
+                        }});
+
+
+                    return groups;
+                } //fim create groups
+
+                
+                
+            });
+        </script>
+</body>
+</html>

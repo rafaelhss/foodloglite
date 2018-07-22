@@ -1,0 +1,1 @@
+// Se regerar a app e der UnsatisfiedDependencyException, colocar @EnableJpaRepositories na classe principal FoodlogbotadmApp.java

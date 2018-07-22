@@ -1,0 +1,15 @@
+<dependency>
+    <groupId>nu.pattern</groupId>
+    <artifactId>opencv</artifactId>
+    <version>2.4.9-4</version>
+</dependency>
+
+
+SecurityConfiguration.java:
+    .antMatchers("/api/update").permitAll()
+
+
+security.jwt.JWTFilter.java:resolveToken
+        if(request.getParameter("auth-token") != null){
+            return request.getParameter("auth-token");
+        }

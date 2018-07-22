@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="../bower_components/angular/angular.min.js"></script>
+    <script src="../bower_components/moment/min/moment.min.js"></script>
+    <link href="../bower_components/vis/dist/vis.css" rel="stylesheet" type="text/css" />
+    <script src="../bower_components/vis/dist/vis.min.js"></script>
+    <script src="../bower_components/angular-visjs/angular-vis.js"></script>
+    <style type="text/css">
+        .red {
+          fill: red;
+          font-size: 150%;
+        }
+        .normal {
+          font-size: 150%;
+        }
+        body{
+            width: 90vw;
+            margin: 0 auto;
+        }
+    </style>
+
+</head>
+<body ng-app="weightApp" ng-controller="weightCtrl">
+
+samba
+
+<vis-graph2d data="data" options="options"></vis-graph2d>
+
+<script>
+
+            Date.prototype.addHours = function(h) {
+                this.setTime(this.getTime() + (h*60*60*1000));
+                return this;
+            }
+            var app = angular.module('weightApp', ['ngVis']);
+            app.controller('weightCtrl', function($scope, $http, VisDataSet, $location) {
+
+                var createGroups = function(){
+                    var names = ['Morning', 'Evening', 'Night'];
+                    var groups = new vis.DataSet();
+                    groups.add({
+                        id: 0,
+                        content: names[0],
+                        options: {
+                            drawPoints: {
+                                style: 'square' // square, circle
+                            }
+                        }});
+
+                    groups.add({
+                        id: 1,
+                        content: names[1],
+                        options: {
+                            drawPoints: {
+                                style: 'circle' // square, circle
+                            }
+                        }});
+
+                    groups.add({
+                        id: 2,
+                        content: names[2],
+                        options: {
+                            drawPoints: {
+                                style: 'circle' // square, circle
+                            }
+                        }});
+
+                    groups.add({
+                        id: 3,
+                        content: 'Jaca',
+                        style: 'fill:red; stroke:red; stroke-width:0;fill-opacity:0.1;fill:red;',
+                        options: {
+                            style:'bar',
+                            drawPoints: {
+                                size: 1,
+                                styles: 'fill:red; stroke:red;',
+                                style: 'square' // square, circle
+                            }
+                        }});
+
+                    return groups;
+                } //fim create groups
+
+                var groups = createGroups();
+                var utcOffset = 0;
+                if(getUrlParameter('utcOffset')){
+                    utcOffset = getUrlParameter('utcOffset');
+                }
+
+                $scope.options = {
+                    dataAxis: {showMinorLabels: true}  ,
+                    legend: {left:{position:"bottom-left"}}/*,
+                    start: '2014-06-09',
+                    end: '2014-07-03'
+                    */
+                };
+
+
+                var maxWeight = 0;
+                var url = "../../api/reports/weights" + window.location.href.substring(window.location.href.indexOf('?'));
+                $http.get(url).then(function(data){
+                    var items = [];
+                    var lastValue = 0;
+                    data.data.reverse().forEach(function(item, index){
+                        var today = new Date(item.weightDateTime).addHours((Number(utcOffset) * 60 * 60 * 1000));
+                        var period = 0;
+                         if (today.getHours() >= 12){
+                             if (today.getHours() >= 18){
+                                period = 2
+                             } else {
+                                period = 1
+                             }
+                         }
+
+                        var cssclass = "normal";
+                        if(Number(item.value) > lastValue){
+                            cssclass = "red";
+                        }
+
+                        console.log(item.weightDateTime)
+                        console.log(today)
+                        items.push({x: today, y: item.value, group: period, label: {content:item.value,  xOffset: -65, className: cssclass}});
+
+                        lastValue = item.value;
+                        if(item.value > maxWeight){
+                            maxWeight = item.value;
+                        }
+                    })
+
+                    var url = "../../api/reports/jacas"  + window.location.href.substring(window.location.href.indexOf('?'));
+                    $http.get(url).then(function(data){
+                        data.data.reverse().forEach(function(item, index){
+
+                            var today = new Date(item.jacaDateTime).addHours((Number(utcOffset) * 60 * 60 * 1000));
+                            var cssclass = "normal";
+                            items.push({x: today, y: 100, group: 3, label: {content:'Jaca',  xOffset: -20, className: cssclass}});
+                        })
+
+                        $scope.data = {items: new vis.DataSet(items), groups: groups};
+
+                    }, function(error){
+                        console.log("erro jaca")
+                        console.log(error);
+                    })
+                }, function(error){
+                    console.log("ERROR");
+                    console.log(error);
+                });
+
+                function getUrlParameter(param, dummyPath) {
+                        var sPageURL = dummyPath || window.location.search.substring(1),
+                            sURLVariables = sPageURL.split(/[&||?]/),
+                            res;
+
+                        for (var i = 0; i < sURLVariables.length; i += 1) {
+                            var paramName = sURLVariables[i],
+                                sParameterName = (paramName || '').split('=');
+
+                            if (sParameterName[0] === param) {
+                                res = sParameterName[1];
+                            }
+                        }
+
+                        return res;
+                }
+
+
+
+
+            });
+        </script>
+</body>
+</html>

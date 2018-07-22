@@ -1,0 +1,25 @@
+{
+  "name": "foodlog",
+  "homepage": "https://github.com/rafaelhss/foodlogbotadm2",
+  "authors": [
+    "rafael <rafaelhss@gmail.com>"
+  ],
+  "description": "",
+  "main": "",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "src/main/webapp/bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular": "^1.6.6",
+    "moment": "^2.19.1",
+    "vis": "^4.21.0",
+    "angular-visjs": "angular-vis#^4.0.2",
+    "jquery": "^3.2.1"
+  }
+}

@@ -1,0 +1,28 @@
+<html>
+<head>
+    <script src="../bower_components/jquery/dist/jquery.min.js"></script>
+</head>
+
+<body>
+
+        <div id="gif"></div>
+</body>
+<script>
+
+    //score
+    function getGif(){
+        $.get("/api/reports/body-log"+ window.location.href.substring(window.location.href.indexOf('?')),function(data){
+                stats = data;
+                var imagem = document.getElementById("gif");
+                imagem.innerHTML = '<img src="data:image/gif;base64,'+ data.photo + '" />';
+
+            });
+
+    }
+
+    getGif();
+
+
+
+</script>
+</html>
