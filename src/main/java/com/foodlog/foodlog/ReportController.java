@@ -10,10 +10,7 @@ import com.foodlog.foodlog.report.evolution.EvolutionTimelineService;
 import com.foodlog.foodlog.report.timeline.MealLogDayService;
 import com.foodlog.foodlog.report.timeline.dayStats.DayStats;
 import com.foodlog.foodlog.report.timeline.dayStats.DayStatsService;
-import com.foodlog.repository.JacaRepository;
-import com.foodlog.repository.ScheduledMealRepository;
-import com.foodlog.repository.UserRepository;
-import com.foodlog.repository.WeightRepository;
+import com.foodlog.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.web.bind.WebDataBinder;
@@ -24,6 +21,8 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -53,6 +52,9 @@ public class ReportController {
 
     @Autowired
     private MealLogDayService mealLogDayService;
+
+    @Autowired
+    private ActivityRepository activityRepository;
 
     @Autowired
     private EvolutionTimelineService evolutionTimelineService;
@@ -105,6 +107,19 @@ public class ReportController {
     }
 
     @CrossOrigin(origins = "*")
+    @RequestMapping("/weight")
+    public Weight listWeightsByUser(@RequestParam(value="userid") Long userid,
+                                          @RequestParam(value="date", defaultValue = "today") Instant refDate) {
+        Instant today = refDate.truncatedTo(ChronoUnit.DAYS);
+
+        Instant tomorrow = refDate.truncatedTo(ChronoUnit.DAYS).plus(1, ChronoUnit.DAYS);
+
+        User user = userRepository.findOne(userid);
+        return weightRepository.findTop1ByUserAndWeightDateTimeBetween(user, today, tomorrow);
+    }
+
+
+    @CrossOrigin(origins = "*")
     @RequestMapping("/evolution-timeline")
     public EvolutionTimeline getEvolutionTimeline(@RequestParam(value="userid") Long userid,
                                                   @RequestParam(value="init-date", defaultValue = "30daysago") Instant initDate,
@@ -126,6 +141,23 @@ public class ReportController {
     @RequestMapping("/meal-log")
     public List<MealLog> getAllMealLogDays(@RequestParam(value="userid") Long userid) {
         return mealLogDayService.findAll(userRepository.findOne(userid));
+    }
+
+    @CrossOrigin(origins = "*")
+    @RequestMapping("/activity")
+    public List<Activity> getAllActivities(@RequestParam(value="userid") Long userid) {
+        ZonedDateTime baseDate = ZonedDateTime.now(ZoneId.of("America/Sao_Paulo"));
+
+        //baseDate = baseDate.minus(1, ChronoUnit.DAYS);
+
+        Instant yesterday = baseDate.truncatedTo(ChronoUnit.DAYS).toInstant().minus(1, ChronoUnit.DAYS);
+
+        Instant tomorrow = baseDate.truncatedTo(ChronoUnit.DAYS).toInstant().plus(1, ChronoUnit.DAYS);
+
+
+
+        User currentUser = userRepository.findOne(userid);
+        return activityRepository.findByUserAndActivitydatetimeBetween(currentUser, yesterday, tomorrow);
     }
 
     @CrossOrigin(origins = "*")

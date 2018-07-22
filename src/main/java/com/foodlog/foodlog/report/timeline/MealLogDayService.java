@@ -44,6 +44,9 @@ public class MealLogDayService {
 
 
 
+        return mealLogRepository.findByUserAndMealDateTimeBetweenOrderByMealDateTimeDesc(currentUser, yesterday, tomorrow);
+
+        /*
 
         List<MealLog> result = new ArrayList<>();
 
@@ -72,5 +75,6 @@ public class MealLogDayService {
         }
 
         return result;
+        */
     }
 }
