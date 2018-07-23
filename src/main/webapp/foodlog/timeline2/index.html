@@ -8,6 +8,19 @@
 
     <script src="../bower_components/angular/angular.min.js"></script>
 
+    <style>
+        body{
+            background-color: EEEEEE;
+        }
+        .seta {
+            font-size: 200%;
+        }
+        input[type="date"]
+        {
+            background-color: EEEEEE;
+            font-size:24px;
+        }
+    </style>
 
 <!--
     <style type="text/css">
@@ -107,7 +120,7 @@
         <div class="container-fluid"  ng-cloak ng-app="timelineApp" ng-controller="timelineCtrl">
             <div class="row">
                 <div class="col-6">
-                    <input type='date' class="form-control" ng-model="refDate" ng-change="changeDate()"/>
+                    <h1>{{name}}</h1>
                 </div>
                 <div class="col-2">
                     <img class="list-item__thumbnail" src="/foodlog/timeline2/img/weight.png">
@@ -115,6 +128,22 @@
                 <div class="col-4">
                     <h1>{{weight}}</h1>
                 </div>
+            </div>
+            <div class="row">
+                <div class="col-1 seta">
+                    <a ng-click="addDays(-1)">
+                        <ons-icon icon="md-arrow-back"></ons-icon>
+                    </a>
+                </div>
+                <div class="col-9">
+                    <input type='date' class="form-control" ng-model="refDate" ng-change="changeDate()"/>
+                </div>
+                <div class="col-1 seta">
+                    <a ng-click="addDays(1)">
+                        <ons-icon icon="md-arrow-forward"></ons-icon>
+                    </a>
+                </div>
+
             </div>
 
 
@@ -144,6 +173,7 @@
             </div>
 
 
+        </div>
     </div>
 
 </body>
@@ -152,6 +182,19 @@
     var app = angular.module("timelineApp",[]);
     app.controller("timelineCtrl", function($scope, $http, $window){
         var host = ""; //"http://foodlogbot2adm.herokuapp.com";
+
+
+
+        $scope.addDays = function(days){
+            function addDays(date, days) {
+                  var result = new Date(date);
+                  result.setDate(result.getDate() + days);
+                  return result;
+            }
+            $scope.refDate = addDays($scope.refDate, days);
+            loadData($scope.refDate);
+
+        }
 
         $scope.changeDate = function(){
             console.log("Tetse")
@@ -179,6 +222,9 @@
 
             $http.get(url).then(function(data){
                 $scope.weight = data.data.value;
+                $scope.name = data.data.user.firstName;
+            }, function(error){
+                $scope.weight = 0;
             });
 
             url = host +
