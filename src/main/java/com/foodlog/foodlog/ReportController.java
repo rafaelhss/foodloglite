@@ -87,7 +87,7 @@ public class ReportController {
                     setValue(Instant.now().minus(30, ChronoUnit.DAYS));
                 } else {
                     try {
-                        setValue(df.parse(text));
+                        setValue(df.parse(text).toInstant() );
                     } catch (ParseException e) {
                         e.printStackTrace();
                     }
@@ -109,7 +109,10 @@ public class ReportController {
     @CrossOrigin(origins = "*")
     @RequestMapping("/weight")
     public Weight listWeightsByUser(@RequestParam(value="userid") Long userid,
-                                          @RequestParam(value="date", defaultValue = "today") Instant refDate) {
+                                    @RequestParam(value="ref-date", defaultValue = "today") Instant refDate) {
+
+        System.out.println("refDate = " + refDate);
+
         Instant today = refDate.truncatedTo(ChronoUnit.DAYS);
 
         Instant tomorrow = refDate.truncatedTo(ChronoUnit.DAYS).plus(1, ChronoUnit.DAYS);
@@ -147,19 +150,23 @@ public class ReportController {
 
     @CrossOrigin(origins = "*")
     @RequestMapping("/activity")
-    public List<Activity> getAllActivities(@RequestParam(value="userid") Long userid) {
-        ZonedDateTime baseDate = ZonedDateTime.now(ZoneId.of("America/Sao_Paulo"));
+    public List<Activity> getAllActivities(@RequestParam(value="userid") Long userid,
+                                           @RequestParam(value="ref-date", defaultValue = "today") Instant refDate) {
+        Instant today4am = refDate.atZone(ZoneId.of("America/Sao_Paulo"))
+                .truncatedTo(ChronoUnit.DAYS)
+                .withZoneSameInstant(ZoneId.of("America/Sao_Paulo"))
+                .plusHours(4L)
+                .toInstant();
 
-        //baseDate = baseDate.minus(1, ChronoUnit.DAYS);
+        System.out.println("activity today4am: " + today4am);
 
-        Instant yesterday = baseDate.truncatedTo(ChronoUnit.DAYS).toInstant().minus(1, ChronoUnit.DAYS);
-
-        Instant tomorrow = baseDate.truncatedTo(ChronoUnit.DAYS).toInstant().plus(1, ChronoUnit.DAYS);
+        Instant tomorrow4am = today4am.plus(1, ChronoUnit.DAYS);
+        System.out.println("activity tomorrow4am: " + tomorrow4am);
 
 
 
         User currentUser = userRepository.findOne(userid);
-        return activityRepository.findByUserAndActivitydatetimeBetween(currentUser, yesterday, tomorrow);
+        return activityRepository.findByUserAndActivitydatetimeBetween(currentUser, today4am, tomorrow4am);
     }
 
     @CrossOrigin(origins = "*")

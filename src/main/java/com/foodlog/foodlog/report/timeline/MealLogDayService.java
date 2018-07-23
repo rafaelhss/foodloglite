@@ -32,18 +32,18 @@ public class MealLogDayService {
     public List<MealLog> findAllByDate(User currentUser, Instant refDate) {
 
 
-        ZonedDateTime baseDate = ZonedDateTime.now(ZoneId.of("America/Sao_Paulo"));
+       // ZonedDateTime baseDate = ZonedDateTime.now(ZoneId.of("America/Sao_Paulo"));
 
         //baseDate = baseDate.minus(1, ChronoUnit.DAYS);
 
-        Instant today4am = baseDate
+        Instant today4am = refDate.atZone(ZoneId.of("America/Sao_Paulo"))
                 .truncatedTo(ChronoUnit.DAYS)
                 .withZoneSameInstant(ZoneId.of("America/Sao_Paulo"))
                 .plusHours(4L)
                 .toInstant();
 
         System.out.println("today4am: " + today4am);
-        
+
         Instant tomorrow4am = today4am.plus(1, ChronoUnit.DAYS);
         System.out.println("tomorrow4am: " + tomorrow4am);
 
