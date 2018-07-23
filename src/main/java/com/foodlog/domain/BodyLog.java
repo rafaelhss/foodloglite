@@ -35,7 +35,7 @@ public class BodyLog implements Serializable {
     private Instant bodyLogDatetime;
 
     @NotNull
-    @Column(name = "update_id", nullable = false)
+    @Column(name = "update_id", nullable = false, unique = true)
     private Long updateId;
 
     @ManyToOne(optional = false)
