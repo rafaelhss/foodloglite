@@ -1,0 +1,9 @@
+{
+  "groups": [{
+    "name": "application",
+    "sourceType": "com.foodlog.config.ApplicationProperties",
+    "type": "com.foodlog.config.ApplicationProperties"
+  }],
+  "hints": [],
+  "properties": []
+}

@@ -139,8 +139,10 @@ public class ReportController {
 
     @CrossOrigin(origins = "*")
     @RequestMapping("/meal-log")
-    public List<MealLog> getAllMealLogDays(@RequestParam(value="userid") Long userid) {
-        return mealLogDayService.findAll(userRepository.findOne(userid));
+    public List<MealLog> findAllMealLogByDate(
+            @RequestParam(value="userid") Long userid,
+            @RequestParam(value="ref-date", defaultValue = "today") Instant refDate) {
+        return mealLogDayService.findAllByDate(userRepository.findOne(userid), refDate);
     }
 
     @CrossOrigin(origins = "*")

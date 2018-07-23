@@ -29,22 +29,27 @@ public class MealLogDayService {
     @Autowired
     private UserRepository userRepository;
 
-    public List<MealLog> findAll(User currentUser) {
+    public List<MealLog> findAllByDate(User currentUser, Instant refDate) {
 
 
         ZonedDateTime baseDate = ZonedDateTime.now(ZoneId.of("America/Sao_Paulo"));
 
         //baseDate = baseDate.minus(1, ChronoUnit.DAYS);
 
-        Instant yesterday = baseDate.truncatedTo(ChronoUnit.DAYS).toInstant().minus(1, ChronoUnit.DAYS);
-        System.out.println(yesterday);
+        Instant today4am = baseDate
+                .truncatedTo(ChronoUnit.DAYS)
+                .withZoneSameInstant(ZoneId.of("America/Sao_Paulo"))
+                .plusHours(4L)
+                .toInstant();
 
-        Instant tomorrow = baseDate.truncatedTo(ChronoUnit.DAYS).toInstant().plus(1, ChronoUnit.DAYS);
-        System.out.println(tomorrow);
+        System.out.println("today4am: " + today4am);
+        
+        Instant tomorrow4am = today4am.plus(1, ChronoUnit.DAYS);
+        System.out.println("tomorrow4am: " + tomorrow4am);
 
 
 
-        return mealLogRepository.findByUserAndMealDateTimeBetweenOrderByMealDateTimeDesc(currentUser, yesterday, tomorrow);
+        return mealLogRepository.findByUserAndMealDateTimeBetweenOrderByMealDateTimeDesc(currentUser, today4am, tomorrow4am);
 
         /*
 
