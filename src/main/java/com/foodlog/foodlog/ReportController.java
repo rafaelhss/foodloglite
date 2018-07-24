@@ -9,6 +9,7 @@ import com.foodlog.foodlog.report.timeline.MealLogDayService;
 import com.foodlog.foodlog.report.timeline.dayStats.DayStats;
 import com.foodlog.foodlog.report.timeline.dayStats.DayStatsService;
 import com.foodlog.foodlog.security.MyTokenProvider;
+import com.foodlog.foodlog.util.Util;
 import com.foodlog.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
@@ -59,6 +60,9 @@ public class ReportController {
 
     @Autowired
     private MyTokenProvider myTokenProvider;
+
+    @Autowired
+    private Util util;
 
 
     @CrossOrigin(origins = "*")
@@ -153,11 +157,8 @@ public class ReportController {
     @RequestMapping("/activity")
     public List<Activity> getAllActivities(@RequestParam(value="userid") Long userid,
                                            @RequestParam(value="ref-date", defaultValue = "today") Instant refDate) {
-        Instant today4am = refDate.atZone(ZoneId.of("America/Sao_Paulo"))
-                .truncatedTo(ChronoUnit.DAYS)
-                .withZoneSameInstant(ZoneId.of("America/Sao_Paulo"))
-                .plusHours(4L)
-                .toInstant();
+        Instant today4am = util.getInstant4AM(refDate);
+
 
         System.out.println("activity today4am: " + today4am);
 

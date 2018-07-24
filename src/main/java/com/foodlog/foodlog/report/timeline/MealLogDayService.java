@@ -4,6 +4,7 @@ package com.foodlog.foodlog.report.timeline;
 
 import com.foodlog.domain.MealLog;
 import com.foodlog.domain.User;
+import com.foodlog.foodlog.util.Util;
 import com.foodlog.repository.MealLogRepository;
 import com.foodlog.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,9 @@ public class MealLogDayService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    Util util;
+
     public List<MealLog> findAllByDate(User currentUser, Instant refDate) {
 
 
@@ -36,11 +40,7 @@ public class MealLogDayService {
 
         //baseDate = baseDate.minus(1, ChronoUnit.DAYS);
 
-        Instant today4am = refDate
-                .truncatedTo(ChronoUnit.DAYS)
-                .plus(4, ChronoUnit.HOURS)
-                .atZone(ZoneId.of("America/Sao_Paulo"))
-                .toInstant();
+        Instant today4am = util.getInstant4AM(refDate);
 
         System.out.println("today4am: " + today4am);
 
@@ -82,4 +82,6 @@ public class MealLogDayService {
         return result;
         */
     }
+
+
 }

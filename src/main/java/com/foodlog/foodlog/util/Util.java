@@ -14,6 +14,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -135,6 +138,13 @@ public class Util {
         BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
     }
 
+    public Instant getInstant4AM(Instant refDate) {
+        return refDate
+                .truncatedTo(ChronoUnit.DAYS)
+                .plus(4, ChronoUnit.HOURS)
+                .atZone(ZoneId.of("America/Sao_Paulo"))
+                .toInstant();
+    }
 
     //tests
     public void setMyTokenProvider(MyTokenProvider myTokenProvider) {

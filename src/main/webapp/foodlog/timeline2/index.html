@@ -157,7 +157,7 @@
                             </div>
 
                             <div class="list-item__center">
-                                <div class="list-item__title">{{meallog.comment}} - {{meallog.mealDateTime}}</div>
+                                <div class="list-item__title">{{meallog.comment}}</div>
                                 <div class="list-item__subtitle">{{meallog.mealDateTime | date : "HH:mm" }}  <span ng-hide="$index == 0"> (apos {{calcDateDiff(correctMealLogs[$index].mealDateTime,correctMealLogs[$index -1].mealDateTime)}}) </span></div>
                             </div>
 
