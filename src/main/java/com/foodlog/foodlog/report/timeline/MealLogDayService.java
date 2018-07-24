@@ -36,10 +36,10 @@ public class MealLogDayService {
 
         //baseDate = baseDate.minus(1, ChronoUnit.DAYS);
 
-        Instant today4am = refDate.atZone(ZoneId.of("America/Sao_Paulo"))
+        Instant today4am = refDate
                 .truncatedTo(ChronoUnit.DAYS)
-                .withZoneSameInstant(ZoneId.of("America/Sao_Paulo"))
-                .plusHours(4L)
+                .plus(4, ChronoUnit.HOURS)
+                .atZone(ZoneId.of("America/Sao_Paulo"))
                 .toInstant();
 
         System.out.println("today4am: " + today4am);
