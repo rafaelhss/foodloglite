@@ -147,7 +147,9 @@
             </div>
 
 
-
+            <div ng-show="carregando">
+                <h1>Carregando...</h1>
+            </div>
              <div>
                 <div ng-repeat="meallog in (correctMealLogs = (meallogs | orderBy:mealDateTime:true))">
                     <span ng-click="openFile(meallog.photoContentType, meallog.photo)">
@@ -210,6 +212,7 @@
 
         function loadData(refDate){
             console.log("refDate: " + refDate);
+            $scope.carregando = true;
 
             $scope.meallogs = [];
 
@@ -225,6 +228,8 @@
                 $scope.name = data.data.user.firstName;
             }, function(error){
                 $scope.weight = 0;
+                $scope.carregando = false;
+
             });
 
             url = host +
@@ -252,6 +257,7 @@
                 $http.get(url)
                           .then(function(data){
                     $scope.meallogs = $scope.meallogs.concat(data.data);
+                    $scope.carregando = false;
 
 
                     $scope.meallogs.sort(function(a,b){
