@@ -122,12 +122,14 @@
                 <div class="col-6">
                     <h1>{{name}}</h1>
                 </div>
-                <div class="col-2">
-                    <img class="list-item__thumbnail" src="/foodlog/timeline2/img/weight.png">
-                </div>
-                <div class="col-4">
-                    <h1>{{weight}}</h1>
-                </div>
+                <span ng-click="loadWeight()">
+                    <div class="col-2">
+                        <img class="list-item__thumbnail" src="/foodlog/timeline2/img/weight.png">
+                    </div>
+                    <div class="col-4">
+                        <h1>{{weight}}</h1>
+                    </div>
+                </span>
             </div>
             <div class="row">
                 <div class="col-1 seta">
@@ -186,6 +188,9 @@
         var host = ""; //"http://foodlogbot2adm.herokuapp.com";
 
 
+        $scope.loadWeight = function(){
+            window.location.href = window.location.href.replace("timeline2","weight");
+        }
 
         $scope.addDays = function(days){
             function addDays(date, days) {
