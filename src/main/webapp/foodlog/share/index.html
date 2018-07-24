@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>FoodLog Lite</title>
+
+    <script src="../bower_components/jquery/dist/jquery.min.js"></script>
+
+    <link rel="stylesheet" href="../bower_components/bootstrap/dist/css/bootstrap.min.css">
+    <script src="../bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+
+    <script src="../bower_components/angular/angular.min.js"></script>
+
+    <style>
+        body{
+            background-color: EEEEEE;
+        }
+        input[type="date"]
+        {
+            background-color: EEEEEE;
+            font-size:24px;
+        }
+    </style>
+
+</head>
+<body>
+    <div class="container-fluid" ng-app="shareApp" ng-controller="shareCtrl">
+        <center>
+            <div class="form-group">
+                <label for="userid">User</label>
+                <input ng-model="userid" type="number" class="form-control" id="userid" aria-describedby="useridHelp" placeholder="Digie o codigo de acesso">
+                <label for="code">Codigo de acesso</label>
+                <input ng-model="code" type="number" class="form-control" id="code" aria-describedby="codeHelp" placeholder="Digie o codigo de acesso">
+                <small id="codeHelp" class="form-text text-muted">Nao compartilhe o codigo com ninguem.</small>
+                <button ng-click="validate(code)" type="button" class="btn btn-primary btn-lg btn-block">Acessar relatorio</button>
+            </div>
+            {{teste}}
+        </center>
+    </div>
+
+</body>
+<script>
+
+    function getParameterByName(name, url) {
+        if (!url) url = window.location.href;
+        name = name.replace(/[\[\]]/g, '\\$&');
+        var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+            results = regex.exec(url);
+        if (!results) return null;
+        if (!results[2]) return '';
+        return decodeURIComponent(results[2].replace(/\+/g, ' '));
+    }
+    var app = angular.module("shareApp",[]);
+    app.controller("shareCtrl", function($scope, $http, $window){
+        $scope.userid = Number(getParameterByName("userid"));
+        $scope.code = Number(getParameterByName("code"));
+
+        $scope.validate = function(code){
+            var url = "/api/reports/validate-code?" +
+                      "userid=" + $scope.userid +
+                      "&code=" + code
+
+            $http.get(url).then(function(data){
+
+                if(data.data.url.indexOf('Error') < 0){
+                    window.location.href = "../" + data.data.url;
+                } else {
+                    alert(data.data.url);
+                }
+                console.log(code);
+            }, function(error){
+                alert(error);
+            });
+
+
+        }
+
+    });
+</script>
+</html>

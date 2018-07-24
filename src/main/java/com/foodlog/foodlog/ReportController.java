@@ -1,8 +1,6 @@
 package com.foodlog.foodlog;
 
 import com.foodlog.domain.*;
-import com.foodlog.foodlog.gateway.service.UpdateService;
-import com.foodlog.foodlog.gateway.telegram.model.Update;
 import com.foodlog.foodlog.report.bodylog.BodyLogImage;
 import com.foodlog.foodlog.report.bodylog.BodyLogService;
 import com.foodlog.foodlog.report.evolution.EvolutionTimeline;
@@ -10,19 +8,19 @@ import com.foodlog.foodlog.report.evolution.EvolutionTimelineService;
 import com.foodlog.foodlog.report.timeline.MealLogDayService;
 import com.foodlog.foodlog.report.timeline.dayStats.DayStats;
 import com.foodlog.foodlog.report.timeline.dayStats.DayStatsService;
+import com.foodlog.foodlog.security.MyTokenProvider;
 import com.foodlog.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
+import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -58,6 +56,9 @@ public class ReportController {
 
     @Autowired
     private EvolutionTimelineService evolutionTimelineService;
+
+    @Autowired
+    private MyTokenProvider myTokenProvider;
 
 
     @CrossOrigin(origins = "*")
@@ -181,4 +182,48 @@ public class ReportController {
 
         return dayStatsService.generateStats(userRepository.findOne(userid));
     }
+
+
+    @CrossOrigin(origins = "*")
+    @RequestMapping("/validate-code")
+    @ResponseBody
+    public ValidationResponse validateCode(@RequestParam(value="userid") Long userid,
+                                           @RequestParam(value="code") Long code){
+
+        String url = "timeline2/index.html?auth-token=@@TOKEN@@&userid=@@userid@@";
+        try {
+            User user = userRepository.findOne(userid);
+            if (user != null) {
+
+                String token = myTokenProvider.createToken(user.getLogin());
+                url = url.replace("@@TOKEN@@", token).replace("@@userid@@", userid.toString());
+
+                return new ValidationResponse(url);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ValidationResponse("Error: " + e.getMessage());
+        }
+
+        return new ValidationResponse("Error");
+    }
+
+    class ValidationResponse {
+        private String url;
+
+        public ValidationResponse(String url){
+            this.url = url;
+        }
+
+        public String getUrl() {
+            return url;
+        }
+
+        public void setUrl(String url) {
+            this.url = url;
+        }
+    }
+
+
+
 }
